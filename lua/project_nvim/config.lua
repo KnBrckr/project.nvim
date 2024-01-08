@@ -37,6 +37,9 @@ M.defaults = {
   -- * win
   scope_chdir = 'global',
 
+	-- Use Telescope's git_files when the parent directory is a git repo
+	use_git_files = true,
+
   -- Path where project.nvim will store the project history for use in
   -- telescope
   datapath = vim.fn.stdpath("data"),

@@ -12,6 +12,7 @@ local telescope_config = require("telescope.config").values
 local actions = require("telescope.actions")
 local state = require("telescope.actions.state")
 local builtin = require("telescope.builtin")
+local utils = require("telescope.utils")
 local entry_display = require("telescope.pickers.entry_display")
 
 local history = require("project_nvim.utils.history")
@@ -76,15 +77,29 @@ local function change_working_directory(prompt_bufnr, prompt)
 end
 
 local function find_project_files(prompt_bufnr)
-  local project_path, cd_successful = change_working_directory(prompt_bufnr, true)
-  local opt = {
-    cwd = project_path,
-    hidden = config.options.show_hidden,
-    mode = "insert",
-  }
-  if cd_successful then
-    builtin.find_files(opt)
-  end
+	local project_path, cd_successful = change_working_directory(prompt_bufnr, true)
+	if cd_successful then
+		local use_git_files = false
+		if config.options.use_git_files then
+			local _, ret, _ = utils.get_os_command_output({ "git", "rev-parse", "--is-inside-work-tree" }, project_path)
+			if ret == 0 then
+				use_git_files = true
+			end
+		end
+		if use_git_files then
+			local opt = {
+				cwd = project_path,
+			}
+			builtin.git_files(opt)
+		else
+			local opt = {
+				cwd = project_path,
+				hidden = config.options.show_hidden,
+				mode = "insert",
+			}
+			builtin.find_files(opt)
+		end
+	end
 end
 
 local function browse_project_files(prompt_bufnr)
